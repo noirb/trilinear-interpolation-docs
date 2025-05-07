@@ -377,3 +377,12 @@ ul > li > h2 + h3:has(a code) ~ p,ul > li > h2 + h3:has(a code) ~ div {
     margin-bottom: 0px;
 }
 
+ul.contents li {
+    border-style: none;
+    margin-bottom: 0px;
+    font-size: 1.7em;
+}
+
+ul.contents li::marker {
+    content: "○";
+}
