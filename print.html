@@ -155,17 +155,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="contents"><a class="header" href="#contents">Contents</a></h1>
-<ul>
-<li><a href="/reference.html">C++ API Reference</a></li>
-</ul>
-<p><br/><br/>
-<br/><br/></p>
-<hr />
-<blockquote>
-<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
-</blockquote>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="usage--examples"><a class="header" href="#usage--examples">Usage &amp; Examples</a></h1>
+                        <h1 id="usage--examples"><a class="header" href="#usage--examples">Usage &amp; Examples</a></h1>
 <h2 id="concepts"><a class="header" href="#concepts">Concepts</a></h2>
 <p>The basic idea behind Trilinear Mesh Interpolation is this: enclose your mesh in a box (typically referred to here as the <code>Lattice</code>). The default state of the
 box essentially matches the mesh's bounding box. When the corners of the box are moved, the mesh deforms to move with it, with vertices close to the moved corner
@@ -191,8 +181,8 @@ have your character walk on it.</p>
 <p>This approach is best used sparingly or on meshes which only need to be deformed once (e.g. in-editor or as part of a procedural level generation step).</p>
 <h1 id="pages"><a class="header" href="#pages">Pages</a></h1>
 <ul>
-<li><a href="how-to//how-to/trilerp-materials.html">Trilinear Interpolation Materials</a></li>
-<li><a href="how-to//how-to/trilerp-mesh.html">Trilinear Interpolated Dynamic Meshes</a></li>
+<li><a href="how-to//trilinear-interpolation-docs/how-to/trilerp-materials.html">Trilinear Interpolation Materials</a></li>
+<li><a href="how-to//trilinear-interpolation-docs/how-to/trilerp-mesh.html">Trilinear Interpolated Dynamic Meshes</a></li>
 </ul>
 <p><br/><br/>
 <br/><br/></p>
@@ -230,8 +220,8 @@ stretch and twist the mesh as you want, while still being able to constrain it t
 <p>This can be fixed by increasing the bounds scale:
 <img src="how-to/../assets/tutorial/wpo-bounds-scale-fix.png" alt="" /></p>
 <p>But, depending on how you are computing the original mesh bounds you may notice that this changes the effect of the Trilinear interpolation!
-(notice the bottom corners of the cube above are no longer correctly aligned with the ground)
-If you are NOT passing the original (unscaled) object bounds as a material parameter but are relying on one of the <code>Object Bounds</code> or <code>Object Local Bounds</code> nodes, then you
+(notice the bottom corners of the cube above are no longer correctly aligned with the ground)</p>
+<p>If you are NOT passing the original (unscaled) object bounds as a material parameter but are relying on one of the <code>Object Bounds</code> or <code>Object Local Bounds</code> nodes, then you
 will need to compensate for the bounds scale in the material. If you know you will always use a constant bounds scale you can use a constant value in the material,
 or you can use a paramter to allow it to be set by an actor blueprint any time the bounds scale is changed or set to a fixed value in different material instances:</p>
 <p><img src="how-to/../assets/tutorial/wpo-bounds-scale-fix-mat.png" alt="" />
@@ -245,19 +235,757 @@ a divide.</p>
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="trilinear-interpolation-with-dynamicmesh"><a class="header" href="#trilinear-interpolation-with-dynamicmesh">Trilinear Interpolation With DynamicMesh</a></h1>
-<p>The functionality for deforming DynamicMeshes is contained within the <strong>UTrilinearInterpolatedMeshComponent</strong>.</p>
+<p>Most of the functionality for deforming DynamicMeshes is contained within the <strong><code>UTrilerpMeshComponent</code></strong>.</p>
+<h3 id="details"><a class="header" href="#details">Details:</a></h3>
+<ul>
+<li><a href="how-to/../blueprint-api/classes/TrilerpMeshComponent.html"><strong>Blueprint API</strong></a></li>
+<li><a href="how-to/../reference/classes/UTrilerpMeshComponent.html"><strong>C++ API</strong></a></li>
+</ul>
+<p>However, it's not strictly necessary to use this component, you can implement your own components or logic using trilinear interpolation:</p>
+<h3 id="details-1"><a class="header" href="#details-1">Details:</a></h3>
+<ul>
+<li><a href="how-to/../blueprint-api/functions/TrilinearInterpolationMesh.html"><strong>Blueprint</strong></a></li>
+<li><a href="how-to/../reference/classes/UNBTrilinearInterpolation.html"><strong>C++</strong></a></li>
+</ul>
 <h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
+<p>The easiest way to get up and running is to use the <code>TrilerpMeshComponent</code>. In the plugin's <code>Examples</code> directory, you will find a blueprint
+called <code>BP_NBDynamicTrilerpMesh</code>, just set the <code>Source Mesh</code> property to the mesh you want to deform.</p>
+<p>You can then either manipulate the lattice points directly:</p>
+<p><img src="how-to/../assets/tutorial/set-lattice-val-update.png" alt="" /></p>
+<p>or use one of the provided functions for manipulating sets of lattice points:</p>
+<p><img src="how-to/../assets/tutorial/breathe-bp.png" alt="" /></p>
+<p><img src="how-to/../assets/tutorial/breathe.gif" alt="" /></p>
+<blockquote>
+<p><code>TranslateFace</code>, <code>RotateFace</code>, and <code>ScaleFace</code> will all call <code>UpdateMesh</code> automatically. If you are manually updating individual lattice points,
+you should call <code>UpdateMesh</code> yourself when you are finished to re-transform the mesh according to the new lattice points.</p>
+</blockquote>
+<h2 id="trilerpmeshcomponent-editor-tooling"><a class="header" href="#trilerpmeshcomponent-editor-tooling"><code>TrilerpMeshComponent</code> Editor Tooling</a></h2>
+<p>If you select a <code>TrilerpMeshCompnent</code> in the editor, you will see a visualization of the current lattice state.</p>
+<p>The green points represent the lattice points themselves, while the blue lines are just visual guides to help you see the shape of the lattice.</p>
+<p><img src="how-to/../assets/tutorial/lattice-tools-1.png" alt="" /></p>
+<p>Selecting one of the green points allows you to drag it around and directly modify the lattice:</p>
+<p><img src="how-to/../assets/tutorial/lattice-face-drag.gif" alt="" /></p>
+<p>If you select one of the grey points, this will select all of the points which make up one side of the lattice. This allows you not only to drag those
+points together, but also allows you to use rotation and scaling tools on them:</p>
+<p><img src="how-to/../assets/tutorial/lattice-face-rotate.gif" alt="" /></p>
+<p><img src="how-to/../assets/tutorial/lattice-face-scale.gif" alt="" /></p>
 <h2 id="handling-collision-data"><a class="header" href="#handling-collision-data">Handling Collision Data</a></h2>
+<p>When initializing the <code>TrilerpMeshComponent</code> from a <strong>static mesh</strong> you have the option to copy <em>both</em> the visual mesh data as well as the collision data.
+This allows us to automatically keep the collision data up-to-date with the mesh deformation.</p>
+<h3 id="simple-collision"><a class="header" href="#simple-collision">Simple Collision</a></h3>
+<p>If you enable <strong>Simple</strong> collision, then any time the mesh is updated we will automatically generate a new convex hull around the result.</p>
+<p><img src="how-to/../assets/tutorial/simple-collision-editing.gif" alt="" /></p>
+<p>If you find that this automatic convex hull doesn't fit your object well and do not wish to enable complex collision, then you can generate your own custom
+collision shapes using the <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/GeometryScript/Collision/SetDynamicMeshCollisionfromMesh">Set Dynamic Mesh Collision from Mesh</a> node in
+a blueprint, or <code>UGeometryScriptLibrary_CollisionFunctions::SetDynamicMeshCollisionFromMesh</code> (defined in <code>GeometryScript/CollisionFunctions.h</code>) in C++.</p>
+<p>In this case, when initializing the <code>TrilerpMeshComponent</code> you should set <code>Include Collision</code> to <code>NONE</code>, otherwise every time you call <code>UpdateMesh</code> we will waste some CPU time processing unused collision geometry.</p>
+<p><img src="how-to/../assets/tutorial/set-dynamic-collision-from-mesh.png" alt="" /></p>
+<h3 id="complex-collision"><a class="header" href="#complex-collision">Complex Collision</a></h3>
+<p>If you enable <strong>Complex</strong> collision, then the collision mesh, itself, will be deformed in the same way as the visual mesh. This means that any changes you make to the
+mesh will be exactly reflected in the collision, although of course at added cost.</p>
+<p><img src="how-to/../assets/tutorial/complex-collision-editing.gif" alt="" /></p>
+<p>If this proves too expensive by default, an alternative approach would be to apply trilinear interpolation separately to two meshes, one detailed
+mesh for visuals with no collision enabled, and one simple mesh with complex collision enabled that is not set to render. This can even be done without using multiple
+<code>TrilerpMeshComponents</code> by transforming the extra mesh manually:</p>
+<p><img src="how-to/../assets/tutorial/update-extra-mesh.png" alt="" /></p>
+<blockquote>
+<h4 id="note"><a class="header" href="#note">NOTE</a></h4>
+<p>In order for complex collision to work correctly, make sure that it is enabled on the component:</p>
+<p><img src="how-to/../assets/tutorial/enable-complex-collision.png" alt="" /></p>
+</blockquote>
 <h2 id="a-note-on-dynamicmeshactor"><a class="header" href="#a-note-on-dynamicmeshactor">A Note on DynamicMeshActor</a></h2>
 <p>The <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/DynamicMeshActor">DynamicMeshActor</a> provides
 a lot of additional functionality which is useful for working with DynamicMeshes. This functionality isn't required to use
-the <code>TrilinearInterpolatedMeshComponent</code>, but if you are doing some of your own mesh modification/generation you may want to
+the <code>TrilerpMeshComponent</code>, but if you are doing some of your own mesh modification/generation you may want to
 use them together.</p>
-<p>Fortunately, it is possible to replace the <code>DynamicMeshComponent</code> on a <code>DynamicMeshActor</code> with a <code>TrilinearInterpolatedMeshComponent</code>.
+<p>Fortunately, it is possible to replace the <code>DynamicMeshComponent</code> on a <code>DynamicMeshActor</code> with a <code>TrilerpMeshComponent</code>.
 You can find the <code>Component Class</code> dropdown in the <code>DynamicMeshActor</code> details panel:
 <img src="how-to/../assets/tutorial/dynamic-mesh-comp-type-setting.png" alt="" /></p>
-<p>You then just need to cast to <code>TrilinearInterpolatedMeshComponent</code> in your actor blueprint:
+<p>You then just need to cast to <code>TrilerpMeshComponent</code> in your actor blueprint:
 <img src="how-to/../assets/tutorial/dynamic-mesh-comp-cast.png" alt="" /></p>
+<p>The example blueprints are all configured this way.</p>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="blueprint-api-documentation"><a class="header" href="#blueprint-api-documentation">Blueprint API Documentation</a></h1>
+<p>An overview and explanation of all included Blueprint nodes</p>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h1 id="pages-1"><a class="header" href="#pages-1">Pages</a></h1>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="pages-2"><a class="header" href="#pages-2">Pages</a></h1>
+<ul>
+<li><a href="blueprint-api/classes//trilinear-interpolation-docs/blueprint-api/classes/TrilerpMeshComponent.html">Trilerp Mesh Component</a></li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-class-trilerpmeshcomponent"><a class="header" href="#bp-class-trilerpmeshcomponent"><strong>BP Class: <code>TrilerpMeshComponent</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html"><code>UTrilerpMeshComponent</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+<p>A DynamicMeshComponent which supports trilinear interpolation of the underlying mesh.</p>
+<hr />
+<h1 id="properties"><a class="header" href="#properties"><strong>Properties</strong></a></h1>
+<ul>
+<li>
+<h1 id="lattice"><a class="header" href="#lattice"><strong><code>Lattice</code></strong></a></h1>
+<h2 id="array-of-vectors"><a class="header" href="#array-of-vectors"><code>Array of</code> <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vectors</code></a></a></h2>
+<p>Offsets from interpolation lattice corners. Do not modify length.</p>
+<p>First four values represent the bottom four corners, second four the
+top four corners.</p>
+<p>Because this is a list of offsets, if all vectors are zero the trilinear interpolation
+will not modify the mesh, it will just return the original vertex positions.</p>
+</li>
+</ul>
+<hr />
+<h1 id="functions-1"><a class="header" href="#functions-1"><strong>Functions</strong></a></h1>
+<ul>
+<li>
+<h1 id="centroid"><a class="header" href="#centroid"><strong><code>Centroid</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - Centroid Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_centroid_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#centroid"><code>UTrilerpMeshComponent::Centroid</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Computes the centroid of four points.</p>
+<p>All four points are assumed to be in the same coordinate frame.</p>
+  </summary>
+<hr />
+<h1 id="inputs"><a class="header" href="#inputs"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="a"><a class="header" href="#a"><strong><code>A</code></strong></a></h2>
+<h3 id="vector"><a class="header" href="#vector"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+</li>
+<li>
+<h2 id="b"><a class="header" href="#b"><strong><code>B</code></strong></a></h2>
+<h3 id="vector-1"><a class="header" href="#vector-1"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+</li>
+<li>
+<h2 id="c"><a class="header" href="#c"><strong><code>C</code></strong></a></h2>
+<h3 id="vector-2"><a class="header" href="#vector-2"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+</li>
+<li>
+<h2 id="d"><a class="header" href="#d"><strong><code>D</code></strong></a></h2>
+<h3 id="vector-3"><a class="header" href="#vector-3"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+</li>
+</ul>
+<h1 id="outputs"><a class="header" href="#outputs"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value"><a class="header" href="#return-value"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="vector-4"><a class="header" href="#vector-4"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+<p>The centroid of A-B-C-D</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="debugdrawlattice"><a class="header" href="#debugdrawlattice"><strong><code>DebugDrawLattice</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - DebugDrawLattice Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_debugdrawlattice_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#debugdrawlattice"><code>UTrilerpMeshComponent::DebugDrawLattice</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Visualizes the current lattice configuration.</p>
+  </summary>
+<hr />
+<h1 id="inputs-1"><a class="header" href="#inputs-1"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="lifetime"><a class="header" href="#lifetime"><strong><code>Lifetime</code></strong></a></h2>
+<h3 id="float"><a class="header" href="#float"><code>Float</code></a></h3>
+<p>The duration, in seconds, to display the debug markers for.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="getcentroid"><a class="header" href="#getcentroid"><strong><code>GetCentroid</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - GetCentroid Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_getcentroid_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#getcentroid"><code>UTrilerpMeshComponent::GetCentroid</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Computes the centroid (in world-space) of the specified lattice face.</p>
+  </summary>
+<hr />
+<h1 id="inputs-2"><a class="header" href="#inputs-2"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="face"><a class="header" href="#face"><strong><code>Face</code></strong></a></h2>
+<h3 id="elatticeface"><a class="header" href="#elatticeface"><a href="blueprint-api/classes/../enums/ELatticeFace.html"><code>ELatticeFace</code></a></a></h3>
+<p>The duration, in seconds, to display the debug markers for.</p>
+</li>
+</ul>
+<h1 id="outputs-1"><a class="header" href="#outputs-1"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-1"><a class="header" href="#return-value-1"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="vector-5"><a class="header" href="#vector-5"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+<p>The centroid of the target Face.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="getcornersws"><a class="header" href="#getcornersws"><strong><code>GetCornersWS</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - GetCornersWS Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_getcornersws_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#getcornersws"><code>UTrilerpMeshComponent::GetCornersWS</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Gets the world-space positions of the Lattice corners (including offsets).</p>
+  </summary>
+<hr />
+<h1 id="outputs-2"><a class="header" href="#outputs-2"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-2"><a class="header" href="#return-value-2"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="array-of-vectors-1"><a class="header" href="#array-of-vectors-1"><code>Array of</code> <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vectors</code></a></a></h3>
+<p>The world-space positions of the current lattice points.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="getsourcecornersws"><a class="header" href="#getsourcecornersws"><strong><code>GetSourceCornersWS</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - GetSourceCornersWS Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_getsourcecornersws_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#getsourcecornersws"><code>UTrilerpMeshComponent::GetSourceCornersWS</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Gets the world-space positions of the untransformed Lattice corners. i.e. the original/base position based on the input mesh bounds.</p>
+  </summary>
+<hr />
+<h1 id="outputs-3"><a class="header" href="#outputs-3"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-3"><a class="header" href="#return-value-3"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="array-of-vectors-2"><a class="header" href="#array-of-vectors-2"><code>Array of</code> <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vectors</code></a></a></h3>
+<p>The world-space positions of the untransformed lattice points.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="initfromdynamicmesh"><a class="header" href="#initfromdynamicmesh"><strong><code>InitFromDynamicMesh</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - InitFromDynamicMesh Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_initfromdynamicmesh_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#initfromdynamicmesh"><code>UTrilerpMeshComponent::InitFromDynamicMesh</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Initializes the dynamic mesh from another given dynamic mesh.</p>
+  </summary>
+<hr />
+<h1 id="inputs-3"><a class="header" href="#inputs-3"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="mesh"><a class="header" href="#mesh"><strong><code>Mesh</code></strong></a></h2>
+<h3 id="dynamic-mesh"><a class="header" href="#dynamic-mesh"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/DynamicMesh"><code>Dynamic Mesh</code></a></a></h3>
+<p>Mesh to copy from.</p>
+</li>
+</ul>
+<h1 id="outputs-4"><a class="header" href="#outputs-4"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-4"><a class="header" href="#return-value-4"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="bool"><a class="header" href="#bool"><code>bool</code></a></h3>
+<p><code>True</code> if copying the mesh data was successful, otherwise <code>False</code>.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="initfromskeletalmesh"><a class="header" href="#initfromskeletalmesh"><strong><code>InitFromSkeletalMesh</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - InitFromSkeletalMesh Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_initfromskeletalmesh_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#initfromskeletalmesh"><code>UTrilerpMeshComponent::InitFromSkeletalMesh</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Initializes the dynamic mesh from a given skeletal mesh.</p>
+  </summary>
+<hr />
+<h1 id="inputs-4"><a class="header" href="#inputs-4"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="mesh-1"><a class="header" href="#mesh-1"><strong><code>Mesh</code></strong></a></h2>
+<h3 id="skeletal-mesh"><a class="header" href="#skeletal-mesh"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Components/SkeletalMesh"><code>Skeletal Mesh</code></a></a></h3>
+<p>Mesh to copy from.</p>
+</li>
+</ul>
+<h1 id="outputs-5"><a class="header" href="#outputs-5"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-5"><a class="header" href="#return-value-5"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="bool-1"><a class="header" href="#bool-1"><code>bool</code></a></h3>
+<p><code>True</code> if copying the mesh data was successful, otherwise <code>False</code>.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="initfromstaticmesh"><a class="header" href="#initfromstaticmesh"><strong><code>InitFromStaticMesh</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - InitFromStaticMesh Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_initfromstaticmesh_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#initfromstaticmesh"><code>UTrilerpMeshComponent::InitFromStaticMesh</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Initializes the dynamic mesh from a given static mesh.</p>
+  </summary>
+<hr />
+<h1 id="inputs-5"><a class="header" href="#inputs-5"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="mesh-2"><a class="header" href="#mesh-2"><strong><code>Mesh</code></strong></a></h2>
+<h3 id="static-mesh"><a class="header" href="#static-mesh"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Components/StaticMesh"><code>Static Mesh</code></a></a></h3>
+<p>Mesh to copy from.</p>
+</li>
+<li>
+<h2 id="include-collision"><a class="header" href="#include-collision"><strong><code>Include Collision</code></strong></a></h2>
+<h3 id="eincludecollisiontype"><a class="header" href="#eincludecollisiontype"><a href="blueprint-api/classes/../enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></a></h3>
+<p>If not set to <code>None</code>, then will also copy the given static mesh's collision data and update/generate collisions each time
+<a href="blueprint-api/classes/TrilerpMeshComponent.html#updatemesh">UpdateMesh</a> is called.</p>
+</li>
+</ul>
+<h1 id="outputs-6"><a class="header" href="#outputs-6"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="return-value-6"><a class="header" href="#return-value-6"><strong><code>Return Value</code></strong></a></h2>
+<h3 id="bool-2"><a class="header" href="#bool-2"><code>bool</code></a></h3>
+<p><code>True</code> if copying the mesh data was successful, otherwise <code>False</code>.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="rotateface"><a class="header" href="#rotateface"><strong><code>RotateFace</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - RotateFace Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_rotateface_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#rotateface"><code>UTrilerpMeshComponent::RotateFace</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Applies a rotation to one whole side of the lattice, relative to its current orientation, around the centroid of the face vertices.</p>
+<p>Calls <a href="blueprint-api/classes/TrilerpMeshComponent.html#updatemesh">UpdateMesh</a>.</p>
+  </summary>
+<hr />
+<h1 id="inputs-6"><a class="header" href="#inputs-6"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="face-1"><a class="header" href="#face-1"><strong><code>Face</code></strong></a></h2>
+<h3 id="elatticeface-1"><a class="header" href="#elatticeface-1"><a href="blueprint-api/classes/../enums/ELatticeFace.html"><code>ELatticeFace</code></a></a></h3>
+<p>Face to rotate.</p>
+</li>
+<li>
+<h2 id="rotation"><a class="header" href="#rotation"><strong><code>Rotation</code></strong></a></h2>
+<h3 id="rotator"><a class="header" href="#rotator"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Rotator"><code>Rotator</code></a></a></h3>
+<p>Rotation to apply.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="scaleface"><a class="header" href="#scaleface"><strong><code>ScaleFace</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - ScaleFace Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_scaleface_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#scaleface"><code>UTrilerpMeshComponent::ScaleFace</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Scales a face by moving its corners relative to their centroid.</p>
+<p>Calls <a href="blueprint-api/classes/TrilerpMeshComponent.html#updatemesh">UpdateMesh</a>.</p>
+  </summary>
+<hr />
+<h1 id="inputs-7"><a class="header" href="#inputs-7"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="face-2"><a class="header" href="#face-2"><strong><code>Face</code></strong></a></h2>
+<h3 id="elatticeface-2"><a class="header" href="#elatticeface-2"><a href="blueprint-api/classes/../enums/ELatticeFace.html"><code>ELatticeFace</code></a></a></h3>
+<p>Face to Scale.</p>
+</li>
+<li>
+<h2 id="scale"><a class="header" href="#scale"><strong><code>Scale</code></strong></a></h2>
+<h3 id="vector-6"><a class="header" href="#vector-6"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+<p>Scale factor</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="setfacetranslation"><a class="header" href="#setfacetranslation"><strong><code>SetFaceTranslation</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - SetFaceTranslation Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_setfacetranslation_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#setfacetranslation"><code>UTrilerpMeshComponent::SetFaceTranslation</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Sets the translation (absolute movement) of one whole side of the lattice, relative to the <strong>base</strong> position of the vertices on that face.</p>
+<p>Given translation is expected to be in world space.</p>
+<p>Calls <a href="blueprint-api/classes/TrilerpMeshComponent.html#updatemesh">UpdateMesh</a>.</p>
+  </summary>
+<hr />
+<h1 id="inputs-8"><a class="header" href="#inputs-8"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="face-3"><a class="header" href="#face-3"><strong><code>Face</code></strong></a></h2>
+<h3 id="elatticeface-3"><a class="header" href="#elatticeface-3"><a href="blueprint-api/classes/../enums/ELatticeFace.html"><code>ELatticeFace</code></a></a></h3>
+<p>Face to translate.</p>
+</li>
+<li>
+<h2 id="translation"><a class="header" href="#translation"><strong><code>Translation</code></strong></a></h2>
+<h3 id="vector-7"><a class="header" href="#vector-7"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="setlatticews"><a class="header" href="#setlatticews"><strong><code>SetLatticeWS</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - SetLatticeWS Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_setlatticews_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#setlatticews"><code>UTrilerpMeshComponent::SetLatticeWS</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Sets the lattice corners to the given world-space coordinates.</p>
+  </summary>
+<hr />
+<h1 id="inputs-9"><a class="header" href="#inputs-9"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="wslattice"><a class="header" href="#wslattice"><strong><code>WSLattice</code></strong></a></h2>
+<h3 id="array-of-vectors-3"><a class="header" href="#array-of-vectors-3"><code>Array of</code> <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vectors</code></a></a></h3>
+<p>New lattice points, in world-space. Should have length <code>8</code>.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="translateface"><a class="header" href="#translateface"><strong><code>TranslateFace</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - Translate Face Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_translateface_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#translateface"><code>UTrilerpMeshComponent::TranslateFace</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Applies a translation (relative movement) to one whole side of the lattice.</p>
+<p>Given translation is expected to be in world space.</p>
+<p>Calls <a href="blueprint-api/classes/TrilerpMeshComponent.html#updatemesh">UpdateMesh</a>.</p>
+  </summary>
+<hr />
+<h1 id="inputs-10"><a class="header" href="#inputs-10"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h2 id="face-4"><a class="header" href="#face-4"><strong><code>Face</code></strong></a></h2>
+<h3 id="elatticeface-4"><a class="header" href="#elatticeface-4"><a href="blueprint-api/classes/../enums/ELatticeFace.html"><code>ELatticeFace</code></a></a></h3>
+<p>Face to translate.</p>
+</li>
+<li>
+<h2 id="delta-translation"><a class="header" href="#delta-translation"><strong><code>Delta Translation</code></strong></a></h2>
+<h3 id="vector-8"><a class="header" href="#vector-8"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/Math/Vector"><code>Vector</code></a></a></h3>
+<p>Relative translation amount.</p>
+</li>
+</ul>
+  </details>
+</li>
+<li>
+<h1 id="updatemesh"><a class="header" href="#updatemesh"><strong><code>UpdateMesh</code></strong></a></h1>
+  <p align="center">
+  <img alt="TrilerpMeshComponent - UpdateMesh Node" src="blueprint-api/classes/../../assets/bpapi_trilerpmeshcomponent_updatemesh_node.png" />
+  </p>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/classes/../../reference/classes/UTrilerpMeshComponent.html#updatemesh"><code>UTrilerpMeshComponent::UpdateMesh</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+  <details>
+  <summary>
+<p>Updates the underlying mesh data to match the current Lattice configuration.</p>
+<p>Should be called whenever Lattice has been modified to keep the mesh up-to-date.</p>
+  </summary>
+<hr />
+  </details>
+</li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="blueprint-functions"><a class="header" href="#blueprint-functions">Blueprint Functions</a></h1>
+<h1 id="pages-3"><a class="header" href="#pages-3">Pages</a></h1>
+<ul>
+<li><a href="blueprint-api/functions//trilinear-interpolation-docs/blueprint-api/functions/TrilinearInterpolationMesh.html">Trilinear Interpolation (Mesh)</a></li>
+<li><a href="blueprint-api/functions//trilinear-interpolation-docs/blueprint-api/functions/TrilinearInterpolationPoint.html">Trilinear Interpolation (Point)</a></li>
+<li><a href="blueprint-api/functions//trilinear-interpolation-docs/blueprint-api/functions/TrilinearInterpolationVertices.html">Trilinear Interpolation (Vertices)</a></li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-function-trilinear-interpolation-mesh"><a class="header" href="#bp-function-trilinear-interpolation-mesh"><strong>BP Function: <code>Trilinear Interpolation (Mesh)</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/functions/../../reference/classes/UNBTrilinearInterpolationBPLibrary.html#trilinearinterpolation2"><code>UNBTrilinearInterpolationBPLibrary</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div><p align="center">
+<img alt="Trilinear Interpolation (Mesh) Node" src="blueprint-api/functions/../../assets/bpapi_trilinear_interpolation_mesh_node.png" />
+</p>
+<hr />
+<p>Performs trilinear interpolation on a given <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/DynamicMesh">Dynamic Mesh</a>.</p>
+<p>The mesh will be directly modified.</p>
+<p>If the required inputs are invalid, the original mesh will be returned.</p>
+<hr />
+<h1 id="inputs-11"><a class="header" href="#inputs-11"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="targetmesh"><a class="header" href="#targetmesh"><strong><code>TargetMesh</code></strong></a></h1>
+<h2 id="dynamic-mesh-1"><a class="header" href="#dynamic-mesh-1"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/DynamicMesh"><code>Dynamic Mesh</code></a></a></h2>
+<p>The mesh to transform.</p>
+</li>
+<li>
+<h1 id="lattice-1"><a class="header" href="#lattice-1"><strong><code>Lattice</code></strong></a></h1>
+<h2 id="array-of-vector"><a class="header" href="#array-of-vector">Array of <code>Vector</code></a></h2>
+<p>List of offsets for the corners of the lattics cube. A value of <code>0</code> will result in no change. MUST contain 8 entries!</p>
+</li>
+<li>
+<h1 id="minbound"><a class="header" href="#minbound"><strong><code>MinBound</code></strong></a></h1>
+<h2 id="vector-9"><a class="header" href="#vector-9"><code>Vector</code></a></h2>
+<p>The minimum corner of the bounding box for the (original, untransformed) mesh.</p>
+</li>
+<li>
+<h1 id="maxbound"><a class="header" href="#maxbound"><strong><code>MaxBound</code></strong></a></h1>
+<h2 id="vector-10"><a class="header" href="#vector-10"><code>Vector</code></a></h2>
+<p>The maximum corner of the bounding box for the (original, untransformed) mesh.</p>
+</li>
+<li>
+<h1 id="origin"><a class="header" href="#origin"><strong><code>Origin</code></strong></a></h1>
+<h2 id="vector-11"><a class="header" href="#vector-11"><code>Vector</code></a></h2>
+<p>Location that the bounds and mesh vertices are relative to.</p>
+</li>
+</ul>
+<h1 id="outputs-7"><a class="header" href="#outputs-7"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="target-mesh"><a class="header" href="#target-mesh"><strong><code>Target Mesh</code></strong></a></h1>
+<h2 id="dynamic-mesh-2"><a class="header" href="#dynamic-mesh-2"><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/DynamicMesh"><code>Dynamic Mesh</code></a></a></h2>
+<p>The transformed mesh.</p>
+</li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-function-trilinear-interpolation-point"><a class="header" href="#bp-function-trilinear-interpolation-point"><strong>BP Function: <code>Trilinear Interpolation (Point)</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/functions/../../reference/classes/UNBTrilinearInterpolationBPLibrary.html#tinterp"><code>UNBTrilinearInterpolationBPLibrary</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div><p align="center">
+<img alt="Trilinear Interpolation (Point) Node" src="blueprint-api/functions/../../assets/bpapi_trilinear_interpolation_point_node.png" />
+</p>
+<hr />
+<p>Performs trilinear interpolation on an individual point/vertex location.</p>
+<p>This is mostly only useful if you are extending the plugin's capabilities or using the interpolation for something very specific to your project.</p>
+<p>If the required inputs are invalid, the original mesh will be returned.</p>
+<hr />
+<h1 id="inputs-12"><a class="header" href="#inputs-12"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="point"><a class="header" href="#point"><strong><code>Point</code></strong></a></h1>
+<h2 id="vector-12"><a class="header" href="#vector-12"><code>Vector</code></a></h2>
+<p>The point to transform.</p>
+</li>
+<li>
+<h1 id="lattice-2"><a class="header" href="#lattice-2"><strong><code>Lattice</code></strong></a></h1>
+<h2 id="array-of-vector-1"><a class="header" href="#array-of-vector-1">Array of <code>Vector</code></a></h2>
+<p>List of offsets for the corners of the lattics cube. A value of <code>0</code> will result in no change. MUST contain 8 entries!</p>
+</li>
+<li>
+<h1 id="minbound-1"><a class="header" href="#minbound-1"><strong><code>MinBound</code></strong></a></h1>
+<h2 id="vector-13"><a class="header" href="#vector-13"><code>Vector</code></a></h2>
+<p>The minimum corner of the bounding box for whatever the point came from.</p>
+</li>
+<li>
+<h1 id="maxbound-1"><a class="header" href="#maxbound-1"><strong><code>MaxBound</code></strong></a></h1>
+<h2 id="vector-14"><a class="header" href="#vector-14"><code>Vector</code></a></h2>
+<p>The maximum corner of the bounding box for whatever the point came from.</p>
+</li>
+</ul>
+<h1 id="outputs-8"><a class="header" href="#outputs-8"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="return-value-7"><a class="header" href="#return-value-7"><strong><code>Return Value</code></strong></a></h1>
+<h2 id="vector-15"><a class="header" href="#vector-15"><code>Vector</code></a></h2>
+<p>The transformed point.</p>
+</li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-function-trilinear-interpolation-vertices"><a class="header" href="#bp-function-trilinear-interpolation-vertices"><strong>BP Function: <code>Trilinear Interpolation (Vertices)</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/functions/../../reference/classes/UNBTrilinearInterpolationBPLibrary.html#trilinearinterpolation"><code>UNBTrilinearInterpolationBPLibrary</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div><p align="center">
+<img alt="Trilinear Interpolation (Vertices) Node" src="blueprint-api/functions/../../assets/bpapi_trilinear_interpolation_vertices_node.png" />
+</p>
+<hr />
+<p>Performs trilinear interpolation on a given <code>GeometryScriptVectorList</code>.</p>
+<p>The list will be directly modified, you may wish to <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI/GeometryScript/ListUtils/DuplicateVectorList">create a copy</a> beforehand.</p>
+<p>If the required inputs are invalid, the original list will be returned unchanged.</p>
+<hr />
+<h1 id="inputs-13"><a class="header" href="#inputs-13"><strong>Inputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="vertices"><a class="header" href="#vertices"><strong><code>Vertices</code></strong></a></h1>
+<h2 id="geometryscriptvectorlist"><a class="header" href="#geometryscriptvectorlist"><code>GeometryScriptVectorList</code></a></h2>
+<p>The vertices to transform.</p>
+</li>
+<li>
+<h1 id="lattice-3"><a class="header" href="#lattice-3"><strong><code>Lattice</code></strong></a></h1>
+<h2 id="array-of-vector-2"><a class="header" href="#array-of-vector-2">Array of <code>Vector</code></a></h2>
+<p>List of offsets for the corners of the lattics cube. A value of <code>0</code> will result in no change. MUST contain 8 entries!</p>
+</li>
+<li>
+<h1 id="minbound-2"><a class="header" href="#minbound-2"><strong><code>MinBound</code></strong></a></h1>
+<h2 id="vector-16"><a class="header" href="#vector-16"><code>Vector</code></a></h2>
+<p>The minimum corner of the bounding box for the (original, untransformed) vertices.</p>
+</li>
+<li>
+<h1 id="maxbound-2"><a class="header" href="#maxbound-2"><strong><code>MaxBound</code></strong></a></h1>
+<h2 id="vector-17"><a class="header" href="#vector-17"><code>Vector</code></a></h2>
+<p>The maximum corner of the bounding box for the (original, untransformed) vertices.</p>
+</li>
+<li>
+<h1 id="origin-1"><a class="header" href="#origin-1"><strong><code>Origin</code></strong></a></h1>
+<h2 id="vector-18"><a class="header" href="#vector-18"><code>Vector</code></a></h2>
+<p>Location that the bounds and vertices are relative to.</p>
+</li>
+</ul>
+<h1 id="outputs-9"><a class="header" href="#outputs-9"><strong>Outputs</strong></a></h1>
+<ul>
+<li>
+<h1 id="vertices-1"><a class="header" href="#vertices-1"><strong><code>Vertices</code></strong></a></h1>
+<h2 id="geometryscriptvectorlist-1"><a class="header" href="#geometryscriptvectorlist-1"><code>GeometryScriptVectorList</code></a></h2>
+<p>The transformed vertices.</p>
+</li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="pages-4"><a class="header" href="#pages-4">Pages</a></h1>
+<ul>
+<li><a href="blueprint-api/enums//trilinear-interpolation-docs/blueprint-api/enums/EIncludeCollisionType.html">EIncludeCollisionType</a></li>
+<li><a href="blueprint-api/enums//trilinear-interpolation-docs/blueprint-api/enums/ELatticeFace.html">ELatticeFace</a></li>
+</ul>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-enum-eincludecollisiontype"><a class="header" href="#bp-enum-eincludecollisiontype"><strong>BP Enum: <code>EIncludeCollisionType</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/enums/../../reference/enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+<p>Which type of collision mesh to use/generate when updating a deformed mesh.</p>
+<hr />
+<h1 id="values"><a class="header" href="#values"><strong>Values</strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td>None</td><td></td></tr>
+<tr><td>Simple</td><td></td></tr>
+<tr><td>Complex</td><td></td></tr>
+</tbody></table>
+</div>
+<p><br/><br/>
+<br/><br/></p>
+<hr />
+<blockquote>
+<p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bp-enum-elatticeface"><a class="header" href="#bp-enum-elatticeface"><strong>BP Enum: <code>ELatticeFace</code></strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>C++ Impl</th><th><a href="blueprint-api/enums/../../reference/enums/ELatticeFace.html"><code>ELatticeFace</code></a></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<hr />
+<p>Represents the faces of a deformation lattice.</p>
+<hr />
+<h1 id="values-1"><a class="header" href="#values-1"><strong>Values</strong></a></h1>
+<div class="table-wrapper"><table><thead><tr><th>Value</th><th>Description</th></tr></thead><tbody>
+<tr><td>Bottom</td><td>-Z</td></tr>
+<tr><td>Top</td><td>+Z</td></tr>
+<tr><td>South</td><td>-Y</td></tr>
+<tr><td>North</td><td>+Y</td></tr>
+<tr><td>West</td><td>+X</td></tr>
+<tr><td>East</td><td>-X</td></tr>
+</tbody></table>
+</div>
 <p><br/><br/>
 <br/><br/></p>
 <hr />
@@ -267,22 +995,22 @@ You can find the <code>Component Class</code> dropdown in the <code>DynamicMeshA
 <div style="break-before: page; page-break-before: always;"></div><h1 id="c-api-reference"><a class="header" href="#c-api-reference">C++ API Reference</a></h1>
 <h2 id="enums"><a class="header" href="#enums">Enums</a></h2>
 <ul>
-<li><a href="/reference/enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></li>
-<li><a href="/reference/enums/ELatticeFace.html"><code>ELatticeFace</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/enums/ELatticeFace.html"><code>ELatticeFace</code></a></li>
 </ul>
 <h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
 <ul>
-<li><a href="/reference/structs/HNBLatticeCornerProxy.html"><code>HNBLatticeCornerProxy</code></a></li>
-<li><a href="/reference/structs/HNBLatticeFaceProxy.html"><code>HNBLatticeFaceProxy</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/structs/HNBLatticeCornerProxy.html"><code>HNBLatticeCornerProxy</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/structs/HNBLatticeFaceProxy.html"><code>HNBLatticeFaceProxy</code></a></li>
 </ul>
 <h2 id="classes"><a class="header" href="#classes">Classes</a></h2>
 <ul>
-<li><a href="/reference/classes/FNBTrilinearInterpolationEditorModule.html"><code>FNBTrilinearInterpolationEditorModule</code></a></li>
-<li><a href="/reference/classes/FNBTrilinearInterpolationModule.html"><code>FNBTrilinearInterpolationModule</code></a></li>
-<li><a href="/reference/classes/NBTrilinearVisualizer.html"><code>NBTrilinearVisualizer</code></a></li>
-<li><a href="/reference/classes/UNBTrilinearInterpolation.html"><code>UNBTrilinearInterpolation</code></a></li>
-<li><a href="/reference/classes/UNBTrilinearInterpolationBPLibrary.html"><code>UNBTrilinearInterpolationBPLibrary</code></a></li>
-<li><a href="/reference/classes/UTrilinearInterpolatedMeshComponent.html"><code>UTrilinearInterpolatedMeshComponent</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/FNBTrilerpEditorModule.html"><code>FNBTrilerpEditorModule</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/FNBTrilinearInterpolationModule.html"><code>FNBTrilinearInterpolationModule</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/NBTrilinearVisualizer.html"><code>NBTrilinearVisualizer</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/UNBTrilinearInterpolation.html"><code>UNBTrilinearInterpolation</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/UNBTrilinearInterpolationBPLibrary.html"><code>UNBTrilinearInterpolationBPLibrary</code></a></li>
+<li><a href="/trilinear-interpolation-docs/reference/classes/UTrilerpMeshComponent.html"><code>UTrilerpMeshComponent</code></a></li>
 </ul>
 <p><br/><br/>
 <br/><br/></p>
@@ -292,8 +1020,8 @@ You can find the <code>Component Class</code> dropdown in the <code>DynamicMeshA
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="enums-1"><a class="header" href="#enums-1">Enums</a></h1>
 <ul>
-<li><a href="reference//reference/reference/enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></li>
-<li><a href="reference//reference/reference/enums/ELatticeFace.html"><code>ELatticeFace</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/enums/EIncludeCollisionType.html"><code>EIncludeCollisionType</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/enums/ELatticeFace.html"><code>ELatticeFace</code></a></li>
 </ul>
 <p><br/><br/>
 <br/><br/></p>
@@ -302,7 +1030,7 @@ You can find the <code>Component Class</code> dropdown in the <code>DynamicMeshA
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="enum-eincludecollisiontype"><a class="header" href="#enum-eincludecollisiontype"><strong>Enum: <code>EIncludeCollisionType</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 28
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 29
 
 enum class EIncludeCollisionType : uint8 {
     NONE    = 0 UMETA(DisplayName = "None"),
@@ -326,7 +1054,7 @@ updating a deformed mesh.</p>
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="enum-elatticeface"><a class="header" href="#enum-elatticeface"><strong>Enum: <code>ELatticeFace</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 13
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 15
 
 enum class ELatticeFace : uint8 {
     BOTTOM = 0 UMETA(DisplayName = "Bottom"),
@@ -354,8 +1082,8 @@ enum class ELatticeFace : uint8 {
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="structs-1"><a class="header" href="#structs-1">Structs</a></h1>
 <ul>
-<li><a href="reference//reference/reference/structs/HNBLatticeCornerProxy.html"><code>HNBLatticeCornerProxy</code></a></li>
-<li><a href="reference//reference/reference/structs/HNBLatticeFaceProxy.html"><code>HNBLatticeFaceProxy</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/structs/HNBLatticeCornerProxy.html"><code>HNBLatticeCornerProxy</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/structs/HNBLatticeFaceProxy.html"><code>HNBLatticeFaceProxy</code></a></li>
 </ul>
 <p><br/><br/>
 <br/><br/></p>
@@ -364,7 +1092,7 @@ enum class ELatticeFace : uint8 {
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="struct-hnblatticecornerproxy"><a class="header" href="#struct-hnblatticecornerproxy"><strong>Struct: <code>HNBLatticeCornerProxy</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 30
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 30
 
 struct HNBLatticeCornerProxy
     : public HComponentVisProxy;
@@ -372,7 +1100,7 @@ struct HNBLatticeCornerProxy
 <hr />
 <p>Hit proxy for handling input on lattice corners</p>
 <hr />
-<h1 id="properties"><a class="header" href="#properties"><strong>Properties</strong></a></h1>
+<h1 id="properties-1"><a class="header" href="#properties-1"><strong>Properties</strong></a></h1>
 <ul>
 <li>
 <h1 id="latticeid"><a class="header" href="#latticeid"><strong><code>LatticeID</code></strong></a></h1>
@@ -387,7 +1115,7 @@ int32 LatticeID;
 <ul>
 <li>
 <h1 id="hnblatticecornerproxy"><a class="header" href="#hnblatticecornerproxy"><strong><code>HNBLatticeCornerProxy</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 35
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 35
 
 public:
 HNBLatticeCornerProxy(
@@ -420,7 +1148,7 @@ HNBLatticeCornerProxy(
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="struct-hnblatticefaceproxy"><a class="header" href="#struct-hnblatticefaceproxy"><strong>Struct: <code>HNBLatticeFaceProxy</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 17
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 17
 
 struct HNBLatticeFaceProxy
     : public HComponentVisProxy;
@@ -428,7 +1156,7 @@ struct HNBLatticeFaceProxy
 <hr />
 <p>Hit proxy for handling input on lattice faces</p>
 <hr />
-<h1 id="properties-1"><a class="header" href="#properties-1"><strong>Properties</strong></a></h1>
+<h1 id="properties-2"><a class="header" href="#properties-2"><strong>Properties</strong></a></h1>
 <ul>
 <li>
 <h1 id="faceid"><a class="header" href="#faceid"><strong><code>FaceID</code></strong></a></h1>
@@ -443,7 +1171,7 @@ ELatticeFace FaceID;
 <ul>
 <li>
 <h1 id="hnblatticefaceproxy"><a class="header" href="#hnblatticefaceproxy"><strong><code>HNBLatticeFaceProxy</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 22
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 22
 
 public:
 HNBLatticeFaceProxy(
@@ -477,12 +1205,12 @@ HNBLatticeFaceProxy(
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="classes-1"><a class="header" href="#classes-1">Classes</a></h1>
 <ul>
-<li><a href="reference//reference/reference/classes/FNBTrilinearInterpolationEditorModule.html"><code>FNBTrilinearInterpolationEditorModule</code></a></li>
-<li><a href="reference//reference/reference/classes/FNBTrilinearInterpolationModule.html"><code>FNBTrilinearInterpolationModule</code></a></li>
-<li><a href="reference//reference/reference/classes/NBTrilinearVisualizer.html"><code>NBTrilinearVisualizer</code></a></li>
-<li><a href="reference//reference/reference/classes/UNBTrilinearInterpolation.html"><code>UNBTrilinearInterpolation</code></a></li>
-<li><a href="reference//reference/reference/classes/UNBTrilinearInterpolationBPLibrary.html"><code>UNBTrilinearInterpolationBPLibrary</code></a></li>
-<li><a href="reference//reference/reference/classes/UTrilinearInterpolatedMeshComponent.html"><code>UTrilinearInterpolatedMeshComponent</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/FNBTrilerpEditorModule.html"><code>FNBTrilerpEditorModule</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/FNBTrilinearInterpolationModule.html"><code>FNBTrilinearInterpolationModule</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/NBTrilinearVisualizer.html"><code>NBTrilinearVisualizer</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/UNBTrilinearInterpolation.html"><code>UNBTrilinearInterpolation</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/UNBTrilinearInterpolationBPLibrary.html"><code>UNBTrilinearInterpolationBPLibrary</code></a></li>
+<li><a href="reference//trilinear-interpolation-docs/reference/reference/classes/UTrilerpMeshComponent.html"><code>UTrilerpMeshComponent</code></a></li>
 </ul>
 <p><br/><br/>
 <br/><br/></p>
@@ -490,10 +1218,10 @@ HNBLatticeFaceProxy(
 <blockquote>
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="class-fnbtrilinearinterpolationeditormodule"><a class="header" href="#class-fnbtrilinearinterpolationeditormodule"><strong>Class: <code>FNBTrilinearInterpolationEditorModule</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationEditorModule.h : 14
+<div style="break-before: page; page-break-before: always;"></div><h1 id="class-fnbtrilerpeditormodule"><a class="header" href="#class-fnbtrilerpeditormodule"><strong>Class: <code>FNBTrilerpEditorModule</code></strong></a></h1>
+<pre><code class="language-cpp">//  NBTrilerpEditorModule.h : 14
 
-class FNBTrilinearInterpolationEditorModule
+class FNBTrilerpEditorModule
     : public IModuleInterface;
 </code></pre>
 <hr />
@@ -504,7 +1232,7 @@ related to Trilinear Mesh Interpoloation</p>
 <ul>
 <li>
 <h1 id="shutdownmodule"><a class="header" href="#shutdownmodule"><strong><code>ShutdownModule</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationEditorModule.h : 18
+<pre><code class="language-cpp">//  NBTrilerpEditorModule.h : 18
 
 public:
 virtual void ShutdownModule() override;
@@ -514,7 +1242,7 @@ virtual void ShutdownModule() override;
 </li>
 <li>
 <h1 id="startupmodule"><a class="header" href="#startupmodule"><strong><code>StartupModule</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationEditorModule.h : 17
+<pre><code class="language-cpp">//  NBTrilerpEditorModule.h : 17
 
 public:
 virtual void StartupModule() override;
@@ -542,7 +1270,7 @@ class FNBTrilinearInterpolationModule
 <ul>
 <li>
 <h1 id="shutdownmodule-1"><a class="header" href="#shutdownmodule-1"><strong><code>ShutdownModule</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationModule.h : 16
+<pre><code class="language-cpp">//  NBTrilinearInterpolationModule.h : 15
 
 public:
 virtual void ShutdownModule() override;
@@ -552,7 +1280,7 @@ virtual void ShutdownModule() override;
 </li>
 <li>
 <h1 id="startupmodule-1"><a class="header" href="#startupmodule-1"><strong><code>StartupModule</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationModule.h : 15
+<pre><code class="language-cpp">//  NBTrilinearInterpolationModule.h : 14
 
 public:
 virtual void StartupModule() override;
@@ -568,13 +1296,13 @@ virtual void StartupModule() override;
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="class-nbtrilinearvisualizer"><a class="header" href="#class-nbtrilinearvisualizer"><strong>Class: <code>NBTrilinearVisualizer</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 47
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 47
 
 class NBTrilinearVisualizer
     : public FComponentVisualizer;
 </code></pre>
 <hr />
-<p>Responsible for showing the lattice configuration and editing widgets on a <a href="reference/classes//reference/classes/UTrilinearInterpolatedMeshComponent.html"><strong><code>UTrilinearInterpolatedMeshComponent</code></strong></a>
+<p>Responsible for showing the lattice configuration and editing widgets on a <strong><code>UTrilinearInterpolatedMeshComponent</code></strong>
 when it's selected in-editor.</p>
 <p>Allows the user to freely edit the lattice through regular translation/rotation/scale controls rather than needing to
 enter corner offsets manually.</p>
@@ -583,7 +1311,7 @@ enter corner offsets manually.</p>
 <ul>
 <li>
 <h1 id="drawvisualization"><a class="header" href="#drawvisualization"><strong><code>DrawVisualization</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 50
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 51
 
 public:
 virtual void DrawVisualization(
@@ -616,7 +1344,7 @@ virtual void DrawVisualization(
 </li>
 <li>
 <h1 id="endediting"><a class="header" href="#endediting"><strong><code>EndEditing</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 54
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 55
 
 public:
 virtual void EndEditing() override;
@@ -626,7 +1354,7 @@ virtual void EndEditing() override;
 </li>
 <li>
 <h1 id="getwidgetlocation"><a class="header" href="#getwidgetlocation"><strong><code>GetWidgetLocation</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 52
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 53
 
 public:
 virtual bool GetWidgetLocation(
@@ -661,7 +1389,7 @@ virtual bool GetWidgetLocation(
 </li>
 <li>
 <h1 id="handleinputdelta"><a class="header" href="#handleinputdelta"><strong><code>HandleInputDelta</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 53
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 54
 
 public:
 virtual bool HandleInputDelta(
@@ -714,7 +1442,7 @@ virtual bool HandleInputDelta(
 </li>
 <li>
 <h1 id="visproxyhandleclick"><a class="header" href="#visproxyhandleclick"><strong><code>VisProxyHandleClick</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationVisualizer.h : 51
+<pre><code class="language-cpp">//  NBTrilinearVisualizer.h : 52
 
 public:
 virtual bool VisProxyHandleClick(
@@ -761,17 +1489,18 @@ virtual bool VisProxyHandleClick(
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="class-unbtrilinearinterpolation"><a class="header" href="#class-unbtrilinearinterpolation"><strong>Class: <code>UNBTrilinearInterpolation</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 9
+<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 13
 
 class UNBTrilinearInterpolation;
 </code></pre>
 <hr />
+<p>Contains the main implementation of Trilinear Interpolation.</p>
 <hr />
 <h1 id="methods-3"><a class="header" href="#methods-3"><strong>Methods</strong></a></h1>
 <ul>
 <li>
 <h1 id="tinterp"><a class="header" href="#tinterp"><strong><code>TInterp</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 44
+<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 48
 
 public:
 static FVector TInterp(
@@ -789,25 +1518,25 @@ static FVector TInterp(
 <h1 id="arguments-6"><a class="header" href="#arguments-6"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="point"><a class="header" href="#point"><strong><code>Point</code></strong></a></h2>
+<h2 id="point-1"><a class="header" href="#point-1"><strong><code>Point</code></strong></a></h2>
 <pre><code class="language-cpp">FVector Point
 </code></pre>
 <p>Point to transform</p>
 </li>
 <li>
-<h2 id="lattice"><a class="header" href="#lattice"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-4"><a class="header" href="#lattice-4"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>The corners of the lattice to use for deformation. Should have length 8.</p>
 </li>
 <li>
-<h2 id="minbound"><a class="header" href="#minbound"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-3"><a class="header" href="#minbound-3"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>Minimum X,Y,Z of the target mesh's bounding box</p>
 </li>
 <li>
-<h2 id="maxbound"><a class="header" href="#maxbound"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-3"><a class="header" href="#maxbound-3"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>Maximum X,Y,Z of the target mesh's bounding box</p>
@@ -826,7 +1555,7 @@ static FVector TInterp(
 </li>
 <li>
 <h1 id="trilinearinterpolation"><a class="header" href="#trilinearinterpolation"><strong><code>TrilinearInterpolation</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 22
+<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 26
 
 public:
 static UDynamicMesh* TrilinearInterpolation(
@@ -846,31 +1575,31 @@ The mesh should be in its original, undeformed state.</p>
 <h1 id="arguments-7"><a class="header" href="#arguments-7"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="targetmesh"><a class="header" href="#targetmesh"><strong><code>TargetMesh</code></strong></a></h2>
+<h2 id="targetmesh-1"><a class="header" href="#targetmesh-1"><strong><code>TargetMesh</code></strong></a></h2>
 <pre><code class="language-cpp">UDynamicMesh* TargetMesh
 </code></pre>
 <p>Mesh to deform</p>
 </li>
 <li>
-<h2 id="lattice-1"><a class="header" href="#lattice-1"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-5"><a class="header" href="#lattice-5"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>The corners of the lattice to use for deformation. Should have length 8.</p>
 </li>
 <li>
-<h2 id="minbound-1"><a class="header" href="#minbound-1"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-4"><a class="header" href="#minbound-4"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>Minimum X,Y,Z of the target mesh's bounding box</p>
 </li>
 <li>
-<h2 id="maxbound-1"><a class="header" href="#maxbound-1"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-4"><a class="header" href="#maxbound-4"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>Maximum X,Y,Z of the target mesh's bounding box</p>
 </li>
 <li>
-<h2 id="origin"><a class="header" href="#origin"><strong><code>origin</code></strong></a></h2>
+<h2 id="origin-2"><a class="header" href="#origin-2"><strong><code>origin</code></strong></a></h2>
 <pre><code class="language-cpp">FVector origin
 </code></pre>
 <p>Origin the mesh's vertices are relative to</p>
@@ -889,7 +1618,7 @@ The mesh should be in its original, undeformed state.</p>
 </li>
 <li>
 <h1 id="trilinearinterpolation-1"><a class="header" href="#trilinearinterpolation-1"><strong><code>TrilinearInterpolation</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 34
+<pre><code class="language-cpp">//  NBTrilinearInterpolation.h : 38
 
 public:
 static FGeometryScriptVectorList TrilinearInterpolation(
@@ -909,31 +1638,31 @@ The vertices should be in their original, undeformed state.</p>
 <h1 id="arguments-8"><a class="header" href="#arguments-8"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="vertices"><a class="header" href="#vertices"><strong><code>Vertices</code></strong></a></h2>
+<h2 id="vertices-2"><a class="header" href="#vertices-2"><strong><code>Vertices</code></strong></a></h2>
 <pre><code class="language-cpp">FGeometryScriptVectorList Vertices
 </code></pre>
 <p>Vertices to transform</p>
 </li>
 <li>
-<h2 id="lattice-2"><a class="header" href="#lattice-2"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-6"><a class="header" href="#lattice-6"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>The corners of the lattice to use for deformation. Should have length 8.</p>
 </li>
 <li>
-<h2 id="minbound-2"><a class="header" href="#minbound-2"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-5"><a class="header" href="#minbound-5"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>Minimum X,Y,Z of the target mesh's bounding box</p>
 </li>
 <li>
-<h2 id="maxbound-2"><a class="header" href="#maxbound-2"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-5"><a class="header" href="#maxbound-5"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>Maximum X,Y,Z of the target mesh's bounding box</p>
 </li>
 <li>
-<h2 id="origin-1"><a class="header" href="#origin-1"><strong><code>origin</code></strong></a></h2>
+<h2 id="origin-3"><a class="header" href="#origin-3"><strong><code>origin</code></strong></a></h2>
 <pre><code class="language-cpp">FVector origin
 </code></pre>
 <p>Origin the mesh's vertices are relative to</p>
@@ -958,7 +1687,7 @@ The vertices should be in their original, undeformed state.</p>
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="class-unbtrilinearinterpolationbplibrary"><a class="header" href="#class-unbtrilinearinterpolationbplibrary"><strong>Class: <code>UNBTrilinearInterpolationBPLibrary</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 13
+<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 16
 
 class UNBTrilinearInterpolationBPLibrary
     : public UBlueprintFunctionLibrary;
@@ -966,12 +1695,13 @@ class UNBTrilinearInterpolationBPLibrary
 <hr />
 <p><strong><em>Reflection-enabled</em></strong></p>
 <hr />
+<p>Provides blueprint support for Trilinear Interpolation methods.</p>
 <hr />
 <h1 id="methods-4"><a class="header" href="#methods-4"><strong>Methods</strong></a></h1>
 <ul>
 <li>
 <h1 id="tinterp-1"><a class="header" href="#tinterp-1"><strong><code>TInterp</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 58
+<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 61
 
 public:
 static FVector TInterp(
@@ -1002,24 +1732,24 @@ static FVector TInterp(
 <h1 id="arguments-9"><a class="header" href="#arguments-9"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="point-1"><a class="header" href="#point-1"><strong><code>Point</code></strong></a></h2>
+<h2 id="point-2"><a class="header" href="#point-2"><strong><code>Point</code></strong></a></h2>
 <pre><code class="language-cpp">FVector Point
 </code></pre>
 </li>
 <li>
-<h2 id="lattice-3"><a class="header" href="#lattice-3"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-7"><a class="header" href="#lattice-7"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>List of offsets for the corners of the lattice cube. A value of 0 will result in no change. MUST contain 8 entries!</p>
 </li>
 <li>
-<h2 id="minbound-3"><a class="header" href="#minbound-3"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-6"><a class="header" href="#minbound-6"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>The minimum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
 </li>
 <li>
-<h2 id="maxbound-3"><a class="header" href="#maxbound-3"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-6"><a class="header" href="#maxbound-6"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>The maximum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
@@ -1038,7 +1768,7 @@ static FVector TInterp(
 </li>
 <li>
 <h1 id="trilinearinterpolation-2"><a class="header" href="#trilinearinterpolation-2"><strong><code>TrilinearInterpolation</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 31
+<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 34
 
 public:
 static FGeometryScriptVectorList TrilinearInterpolation(
@@ -1070,31 +1800,31 @@ static FGeometryScriptVectorList TrilinearInterpolation(
 <h1 id="arguments-10"><a class="header" href="#arguments-10"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="vertices-1"><a class="header" href="#vertices-1"><strong><code>Vertices</code></strong></a></h2>
+<h2 id="vertices-3"><a class="header" href="#vertices-3"><strong><code>Vertices</code></strong></a></h2>
 <pre><code class="language-cpp">FGeometryScriptVectorList Vertices
 </code></pre>
 <p>List of vertices to transform.</p>
 </li>
 <li>
-<h2 id="lattice-4"><a class="header" href="#lattice-4"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-8"><a class="header" href="#lattice-8"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>List of offsets for the corners of the lattice cube. A value of 0 will result in no change. MUST contain 8 entries!</p>
 </li>
 <li>
-<h2 id="minbound-4"><a class="header" href="#minbound-4"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-7"><a class="header" href="#minbound-7"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>The minimum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
 </li>
 <li>
-<h2 id="maxbound-4"><a class="header" href="#maxbound-4"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-7"><a class="header" href="#maxbound-7"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>The maximum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
 </li>
 <li>
-<h2 id="origin-2"><a class="header" href="#origin-2"><strong><code>Origin</code></strong></a></h2>
+<h2 id="origin-4"><a class="header" href="#origin-4"><strong><code>Origin</code></strong></a></h2>
 <pre><code class="language-cpp">FVector Origin
 </code></pre>
 <p>The origin of the mesh the vertices are from. Many meshes may have an origin which is not the same as their pivot.</p>
@@ -1113,7 +1843,7 @@ static FGeometryScriptVectorList TrilinearInterpolation(
 </li>
 <li>
 <h1 id="trilinearinterpolation2"><a class="header" href="#trilinearinterpolation2"><strong><code>TrilinearInterpolation2</code></strong></a></h1>
-<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 45
+<pre><code class="language-cpp">//  NBTrilinearInterpolationBPLibrary.h : 48
 
 public:
 static UDynamicMesh* TrilinearInterpolation2(
@@ -1145,31 +1875,31 @@ static UDynamicMesh* TrilinearInterpolation2(
 <h1 id="arguments-11"><a class="header" href="#arguments-11"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="targetmesh-1"><a class="header" href="#targetmesh-1"><strong><code>TargetMesh</code></strong></a></h2>
+<h2 id="targetmesh-2"><a class="header" href="#targetmesh-2"><strong><code>TargetMesh</code></strong></a></h2>
 <pre><code class="language-cpp">UDynamicMesh* TargetMesh
 </code></pre>
 <p>Mesh to transform.</p>
 </li>
 <li>
-<h2 id="lattice-5"><a class="header" href="#lattice-5"><strong><code>Lattice</code></strong></a></h2>
+<h2 id="lattice-9"><a class="header" href="#lattice-9"><strong><code>Lattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; Lattice
 </code></pre>
 <p>List of offsets for the corners of the lattice cube. A value of 0 will result in no change. MUST contain 8 entries!</p>
 </li>
 <li>
-<h2 id="minbound-5"><a class="header" href="#minbound-5"><strong><code>MinBound</code></strong></a></h2>
+<h2 id="minbound-8"><a class="header" href="#minbound-8"><strong><code>MinBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MinBound
 </code></pre>
 <p>The minimum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
 </li>
 <li>
-<h2 id="maxbound-5"><a class="header" href="#maxbound-5"><strong><code>MaxBound</code></strong></a></h2>
+<h2 id="maxbound-8"><a class="header" href="#maxbound-8"><strong><code>MaxBound</code></strong></a></h2>
 <pre><code class="language-cpp">FVector MaxBound
 </code></pre>
 <p>The maximum corner of the bounding box for the provided vertices (i.e. the mesh bounds the vertices came from)</p>
 </li>
 <li>
-<h2 id="origin-3"><a class="header" href="#origin-3"><strong><code>origin</code></strong></a></h2>
+<h2 id="origin-5"><a class="header" href="#origin-5"><strong><code>origin</code></strong></a></h2>
 <pre><code class="language-cpp">FVector origin
 </code></pre>
 </li>
@@ -1192,10 +1922,10 @@ static UDynamicMesh* TrilinearInterpolation2(
 <blockquote>
 <p>For any questions, help, suggestions or feature requests, please feel free to contact me at <a href="mailto:nbpsup@gmail.com">nbpsup@gmail.com</a></p>
 </blockquote>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="class-utrilinearinterpolatedmeshcomponent"><a class="header" href="#class-utrilinearinterpolatedmeshcomponent"><strong>Class: <code>UTrilinearInterpolatedMeshComponent</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 40
+<div style="break-before: page; page-break-before: always;"></div><h1 id="class-utrilerpmeshcomponent"><a class="header" href="#class-utrilerpmeshcomponent"><strong>Class: <code>UTrilerpMeshComponent</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 41
 
-class NBTRILINEARINTERPOLATION_API UTrilinearInterpolatedMeshComponent
+class NBTRILINEARINTERPOLATION_API UTrilerpMeshComponent
     : public UDynamicMeshComponent;
 </code></pre>
 <hr />
@@ -1212,10 +1942,10 @@ class NBTRILINEARINTERPOLATION_API UTrilinearInterpolatedMeshComponent
 <p>A DynamicMeshComponent which supports trilinear interpolation of the
 underlying mesh.</p>
 <hr />
-<h1 id="properties-2"><a class="header" href="#properties-2"><strong>Properties</strong></a></h1>
+<h1 id="properties-3"><a class="header" href="#properties-3"><strong>Properties</strong></a></h1>
 <ul>
 <li>
-<h1 id="lattice-6"><a class="header" href="#lattice-6"><strong><code>Lattice</code></strong></a></h1>
+<h1 id="lattice-10"><a class="header" href="#lattice-10"><strong><code>Lattice</code></strong></a></h1>
 <pre><code class="language-cpp">public:
 TArray&lt;FVector&gt; Lattice;
 </code></pre>
@@ -1226,6 +1956,7 @@ TArray&lt;FVector&gt; Lattice;
 <li><strong>BlueprintReadWrite</strong></li>
 <li><strong>EditAnywhere</strong></li>
 <li><strong>EditFixedSize</strong></li>
+<li><strong>Category</strong> = <em>NBTrilinearInterpolation</em></li>
 </ul>
 <hr />
   <summary>
@@ -1246,6 +1977,7 @@ FBoxSphereBounds SourceBounds;
 <h3 id="specifiers-7"><a class="header" href="#specifiers-7">Specifiers:</a></h3>
 <ul>
 <li><strong>BlueprintReadOnly</strong></li>
+<li><strong>Category</strong> = <em>NBTrilinearInterpolation</em></li>
 </ul>
 <hr />
   <summary>
@@ -1257,11 +1989,11 @@ FBoxSphereBounds SourceBounds;
 <h1 id="constructors-2"><a class="header" href="#constructors-2"><strong>Constructors</strong></a></h1>
 <ul>
 <li>
-<h1 id="utrilinearinterpolatedmeshcomponent"><a class="header" href="#utrilinearinterpolatedmeshcomponent"><strong><code>UTrilinearInterpolatedMeshComponent</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 46
+<h1 id="utrilerpmeshcomponent"><a class="header" href="#utrilerpmeshcomponent"><strong><code>UTrilerpMeshComponent</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 47
 
 public:
-UTrilinearInterpolatedMeshComponent();
+UTrilerpMeshComponent();
 </code></pre>
   <details>
   </details>
@@ -1271,8 +2003,8 @@ UTrilinearInterpolatedMeshComponent();
 <h1 id="methods-5"><a class="header" href="#methods-5"><strong>Methods</strong></a></h1>
 <ul>
 <li>
-<h1 id="centroid"><a class="header" href="#centroid"><strong><code>Centroid</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 164
+<h1 id="centroid-1"><a class="header" href="#centroid-1"><strong><code>Centroid</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 166
 
 protected:
 FVector Centroid(
@@ -1298,22 +2030,22 @@ FVector Centroid(
 <h1 id="arguments-12"><a class="header" href="#arguments-12"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="a"><a class="header" href="#a"><strong><code>a</code></strong></a></h2>
+<h2 id="a-1"><a class="header" href="#a-1"><strong><code>a</code></strong></a></h2>
 <pre><code class="language-cpp">FVector a
 </code></pre>
 </li>
 <li>
-<h2 id="b"><a class="header" href="#b"><strong><code>b</code></strong></a></h2>
+<h2 id="b-1"><a class="header" href="#b-1"><strong><code>b</code></strong></a></h2>
 <pre><code class="language-cpp">FVector b
 </code></pre>
 </li>
 <li>
-<h2 id="c"><a class="header" href="#c"><strong><code>c</code></strong></a></h2>
+<h2 id="c-1"><a class="header" href="#c-1"><strong><code>c</code></strong></a></h2>
 <pre><code class="language-cpp">FVector c
 </code></pre>
 </li>
 <li>
-<h2 id="d"><a class="header" href="#d"><strong><code>d</code></strong></a></h2>
+<h2 id="d-1"><a class="header" href="#d-1"><strong><code>d</code></strong></a></h2>
 <pre><code class="language-cpp">FVector d
 </code></pre>
 </li>
@@ -1329,8 +2061,8 @@ FVector Centroid(
   </details>
 </li>
 <li>
-<h1 id="debugdrawlattice"><a class="header" href="#debugdrawlattice"><strong><code>DebugDrawLattice</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 155
+<h1 id="debugdrawlattice-1"><a class="header" href="#debugdrawlattice-1"><strong><code>DebugDrawLattice</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 157
 
 public:
 void DebugDrawLattice(
@@ -1352,7 +2084,7 @@ void DebugDrawLattice(
 <h1 id="arguments-13"><a class="header" href="#arguments-13"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="lifetime"><a class="header" href="#lifetime"><strong><code>Lifetime</code></strong></a></h2>
+<h2 id="lifetime-1"><a class="header" href="#lifetime-1"><strong><code>Lifetime</code></strong></a></h2>
 <pre><code class="language-cpp">float Lifetime
 </code></pre>
 </li>
@@ -1360,8 +2092,8 @@ void DebugDrawLattice(
   </details>
 </li>
 <li>
-<h1 id="getcentroid"><a class="header" href="#getcentroid"><strong><code>GetCentroid</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 110
+<h1 id="getcentroid-1"><a class="header" href="#getcentroid-1"><strong><code>GetCentroid</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 112
 
 public:
 FVector GetCentroid(
@@ -1383,7 +2115,7 @@ FVector GetCentroid(
 <h1 id="arguments-14"><a class="header" href="#arguments-14"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="face"><a class="header" href="#face"><strong><code>Face</code></strong></a></h2>
+<h2 id="face-5"><a class="header" href="#face-5"><strong><code>Face</code></strong></a></h2>
 <pre><code class="language-cpp">const ELatticeFace Face
 </code></pre>
 </li>
@@ -1399,8 +2131,8 @@ FVector GetCentroid(
   </details>
 </li>
 <li>
-<h1 id="getcornersws"><a class="header" href="#getcornersws"><strong><code>GetCornersWS</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 97
+<h1 id="getcornersws-1"><a class="header" href="#getcornersws-1"><strong><code>GetCornersWS</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 99
 
 public:
 TArray&lt;FVector&gt; GetCornersWS() const;
@@ -1427,8 +2159,8 @@ TArray&lt;FVector&gt; GetCornersWS() const;
   </details>
 </li>
 <li>
-<h1 id="getsourcecornersws"><a class="header" href="#getsourcecornersws"><strong><code>GetSourceCornersWS</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 104
+<h1 id="getsourcecornersws-1"><a class="header" href="#getsourcecornersws-1"><strong><code>GetSourceCornersWS</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 106
 
 public:
 TArray&lt;FVector&gt; GetSourceCornersWS() const;
@@ -1456,8 +2188,8 @@ i.e. the original/base position based on the input mesh bounds.</p>
   </details>
 </li>
 <li>
-<h1 id="initfromdynamicmesh"><a class="header" href="#initfromdynamicmesh"><strong><code>InitFromDynamicMesh</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 76
+<h1 id="initfromdynamicmesh-1"><a class="header" href="#initfromdynamicmesh-1"><strong><code>InitFromDynamicMesh</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 78
 
 public:
 bool InitFromDynamicMesh(
@@ -1479,7 +2211,7 @@ bool InitFromDynamicMesh(
 <h1 id="arguments-15"><a class="header" href="#arguments-15"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="mesh"><a class="header" href="#mesh"><strong><code>Mesh</code></strong></a></h2>
+<h2 id="mesh-3"><a class="header" href="#mesh-3"><strong><code>Mesh</code></strong></a></h2>
 <pre><code class="language-cpp">UDynamicMesh* Mesh
 </code></pre>
 <p>Mesh to copy</p>
@@ -1497,8 +2229,8 @@ bool InitFromDynamicMesh(
   </details>
 </li>
 <li>
-<h1 id="initfromskeletalmesh"><a class="header" href="#initfromskeletalmesh"><strong><code>InitFromSkeletalMesh</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 68
+<h1 id="initfromskeletalmesh-1"><a class="header" href="#initfromskeletalmesh-1"><strong><code>InitFromSkeletalMesh</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 70
 
 public:
 bool InitFromSkeletalMesh(
@@ -1520,7 +2252,7 @@ bool InitFromSkeletalMesh(
 <h1 id="arguments-16"><a class="header" href="#arguments-16"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="mesh-1"><a class="header" href="#mesh-1"><strong><code>Mesh</code></strong></a></h2>
+<h2 id="mesh-4"><a class="header" href="#mesh-4"><strong><code>Mesh</code></strong></a></h2>
 <pre><code class="language-cpp">USkeletalMesh* Mesh
 </code></pre>
 <p>Mesh to copy</p>
@@ -1538,8 +2270,8 @@ bool InitFromSkeletalMesh(
   </details>
 </li>
 <li>
-<h1 id="initfromstaticmesh"><a class="header" href="#initfromstaticmesh"><strong><code>InitFromStaticMesh</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 60
+<h1 id="initfromstaticmesh-1"><a class="header" href="#initfromstaticmesh-1"><strong><code>InitFromStaticMesh</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 62
 
 public:
 bool InitFromStaticMesh(
@@ -1562,7 +2294,7 @@ bool InitFromStaticMesh(
 <h1 id="arguments-17"><a class="header" href="#arguments-17"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="mesh-2"><a class="header" href="#mesh-2"><strong><code>Mesh</code></strong></a></h2>
+<h2 id="mesh-5"><a class="header" href="#mesh-5"><strong><code>Mesh</code></strong></a></h2>
 <pre><code class="language-cpp">UStaticMesh* Mesh
 </code></pre>
 <p>Mesh to copy</p>
@@ -1571,6 +2303,7 @@ bool InitFromStaticMesh(
 <h2 id="includecollision"><a class="header" href="#includecollision"><strong><code>IncludeCollision</code></strong></a></h2>
 <pre><code class="language-cpp">EIncludeCollisionType IncludeCollision = EIncludeCollisionType::NONE
 </code></pre>
+<p>Whether to copy and process the mesh's collision data as well</p>
 </li>
 </ul>
 <hr />
@@ -1586,7 +2319,7 @@ bool InitFromStaticMesh(
 </li>
 <li>
 <h1 id="onregister"><a class="header" href="#onregister"><strong><code>OnRegister</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 49
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 49
 
 public:
 virtual void OnRegister() override;
@@ -1596,7 +2329,7 @@ virtual void OnRegister() override;
 </li>
 <li>
 <h1 id="posteditchangechainproperty"><a class="header" href="#posteditchangechainproperty"><strong><code>PostEditChangeChainProperty</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 48
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 52
 
 public:
 virtual void PostEditChangeChainProperty(
@@ -1617,7 +2350,7 @@ virtual void PostEditChangeChainProperty(
 </li>
 <li>
 <h1 id="posteditundo"><a class="header" href="#posteditundo"><strong><code>PostEditUndo</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 52
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 53
 
 public:
 virtual void PostEditUndo() override;
@@ -1626,8 +2359,8 @@ virtual void PostEditUndo() override;
   </details>
 </li>
 <li>
-<h1 id="rotateface"><a class="header" href="#rotateface"><strong><code>RotateFace</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 148
+<h1 id="rotateface-1"><a class="header" href="#rotateface-1"><strong><code>RotateFace</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 150
 
 public:
 void RotateFace(
@@ -1652,12 +2385,12 @@ orientatoin, around the centroid of the face vertices.</p>
 <h1 id="arguments-19"><a class="header" href="#arguments-19"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="face-1"><a class="header" href="#face-1"><strong><code>Face</code></strong></a></h2>
+<h2 id="face-6"><a class="header" href="#face-6"><strong><code>Face</code></strong></a></h2>
 <pre><code class="language-cpp">const ELatticeFace Face
 </code></pre>
 </li>
 <li>
-<h2 id="rotation"><a class="header" href="#rotation"><strong><code>Rotation</code></strong></a></h2>
+<h2 id="rotation-1"><a class="header" href="#rotation-1"><strong><code>Rotation</code></strong></a></h2>
 <pre><code class="language-cpp">const FRotator&amp; Rotation
 </code></pre>
 </li>
@@ -1665,8 +2398,8 @@ orientatoin, around the centroid of the face vertices.</p>
   </details>
 </li>
 <li>
-<h1 id="scaleface"><a class="header" href="#scaleface"><strong><code>ScaleFace</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 139
+<h1 id="scaleface-1"><a class="header" href="#scaleface-1"><strong><code>ScaleFace</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 141
 
 public:
 void ScaleFace(
@@ -1690,12 +2423,12 @@ void ScaleFace(
 <h1 id="arguments-20"><a class="header" href="#arguments-20"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="face-2"><a class="header" href="#face-2"><strong><code>Face</code></strong></a></h2>
+<h2 id="face-7"><a class="header" href="#face-7"><strong><code>Face</code></strong></a></h2>
 <pre><code class="language-cpp">const ELatticeFace Face
 </code></pre>
 </li>
 <li>
-<h2 id="scale"><a class="header" href="#scale"><strong><code>Scale</code></strong></a></h2>
+<h2 id="scale-1"><a class="header" href="#scale-1"><strong><code>Scale</code></strong></a></h2>
 <pre><code class="language-cpp">const FVector&amp; Scale
 </code></pre>
 </li>
@@ -1703,8 +2436,8 @@ void ScaleFace(
   </details>
 </li>
 <li>
-<h1 id="setfacetranslation"><a class="header" href="#setfacetranslation"><strong><code>SetFaceTranslation</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 131
+<h1 id="setfacetranslation-1"><a class="header" href="#setfacetranslation-1"><strong><code>SetFaceTranslation</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 133
 
 public:
 void SetFaceTranslation(
@@ -1730,12 +2463,12 @@ relative to the base position of the vertices on that face.</p>
 <h1 id="arguments-21"><a class="header" href="#arguments-21"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="face-3"><a class="header" href="#face-3"><strong><code>Face</code></strong></a></h2>
+<h2 id="face-8"><a class="header" href="#face-8"><strong><code>Face</code></strong></a></h2>
 <pre><code class="language-cpp">const ELatticeFace Face
 </code></pre>
 </li>
 <li>
-<h2 id="translation"><a class="header" href="#translation"><strong><code>Translation</code></strong></a></h2>
+<h2 id="translation-1"><a class="header" href="#translation-1"><strong><code>Translation</code></strong></a></h2>
 <pre><code class="language-cpp">const FVector&amp; Translation
 </code></pre>
 </li>
@@ -1743,8 +2476,8 @@ relative to the base position of the vertices on that face.</p>
   </details>
 </li>
 <li>
-<h1 id="setlatticews"><a class="header" href="#setlatticews"><strong><code>SetLatticeWS</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 91
+<h1 id="setlatticews-1"><a class="header" href="#setlatticews-1"><strong><code>SetLatticeWS</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 93
 
 public:
 void SetLatticeWS(
@@ -1766,7 +2499,7 @@ void SetLatticeWS(
 <h1 id="arguments-22"><a class="header" href="#arguments-22"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="wslattice"><a class="header" href="#wslattice"><strong><code>WSLattice</code></strong></a></h2>
+<h2 id="wslattice-1"><a class="header" href="#wslattice-1"><strong><code>WSLattice</code></strong></a></h2>
 <pre><code class="language-cpp">TArray&lt;FVector&gt; WSLattice
 </code></pre>
 <p>New lattice points, in world-space. Should have length 8.</p>
@@ -1775,8 +2508,8 @@ void SetLatticeWS(
   </details>
 </li>
 <li>
-<h1 id="translateface"><a class="header" href="#translateface"><strong><code>TranslateFace</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 120
+<h1 id="translateface-1"><a class="header" href="#translateface-1"><strong><code>TranslateFace</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 122
 
 public:
 void TranslateFace(
@@ -1801,7 +2534,7 @@ void TranslateFace(
 <h1 id="arguments-23"><a class="header" href="#arguments-23"><strong>Arguments</strong></a></h1>
 <ul>
 <li>
-<h2 id="face-4"><a class="header" href="#face-4"><strong><code>Face</code></strong></a></h2>
+<h2 id="face-9"><a class="header" href="#face-9"><strong><code>Face</code></strong></a></h2>
 <pre><code class="language-cpp">const ELatticeFace Face
 </code></pre>
 </li>
@@ -1814,8 +2547,8 @@ void TranslateFace(
   </details>
 </li>
 <li>
-<h1 id="updatemesh"><a class="header" href="#updatemesh"><strong><code>UpdateMesh</code></strong></a></h1>
-<pre><code class="language-cpp">//  TrilinearInterpolatedMeshComponent.h : 84
+<h1 id="updatemesh-1"><a class="header" href="#updatemesh-1"><strong><code>UpdateMesh</code></strong></a></h1>
+<pre><code class="language-cpp">//  TrilerpMeshComponent.h : 86
 
 public:
 void UpdateMesh();

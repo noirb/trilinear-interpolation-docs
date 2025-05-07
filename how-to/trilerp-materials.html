@@ -184,8 +184,8 @@ stretch and twist the mesh as you want, while still being able to constrain it t
 <p>This can be fixed by increasing the bounds scale:
 <img src="../assets/tutorial/wpo-bounds-scale-fix.png" alt="" /></p>
 <p>But, depending on how you are computing the original mesh bounds you may notice that this changes the effect of the Trilinear interpolation!
-(notice the bottom corners of the cube above are no longer correctly aligned with the ground)
-If you are NOT passing the original (unscaled) object bounds as a material parameter but are relying on one of the <code>Object Bounds</code> or <code>Object Local Bounds</code> nodes, then you
+(notice the bottom corners of the cube above are no longer correctly aligned with the ground)</p>
+<p>If you are NOT passing the original (unscaled) object bounds as a material parameter but are relying on one of the <code>Object Bounds</code> or <code>Object Local Bounds</code> nodes, then you
 will need to compensate for the bounds scale in the material. If you know you will always use a constant bounds scale you can use a constant value in the material,
 or you can use a paramter to allow it to be set by an actor blueprint any time the bounds scale is changed or set to a fixed value in different material instances:</p>
 <p><img src="../assets/tutorial/wpo-bounds-scale-fix-mat.png" alt="" />
