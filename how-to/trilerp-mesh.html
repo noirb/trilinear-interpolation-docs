@@ -182,8 +182,9 @@ you should call <code>UpdateMesh</code> yourself when you are finished to re-tra
 <h2 id="lattice-indices"><a class="header" href="#lattice-indices">Lattice Indices</a></h2>
 <p>The deformation lattice is stored as an array of 8 vectors, one for each corner of the lattice. You can manipulate individual corners independently from the others to achieve a wide variety of effects.</p>
 <p>The first four entries of the lattice array correspond to the bottom four corners of the lattice, while the last four correspond to the top four corners of the lattice.</p>
+<p>The Lattice array indices correspond to the following corners (i.e. <code>Lattice[0]</code> matches the corner marked <code>0</code>):</p>
 <p><img src="../assets/tutorial/lattice-corners.png" alt="lattice corner indices"/></p>
-<blockquote>**NOTE**: While you are free to set and assign the `Lattice` array any way you see fit, you should never change its length! It should **always** have exactly `8` entries.</blockquote>
+<blockquote><strong>NOTE:</strong> While you are free to set and assign the <code>Lattice</code> array any way you see fit, you should never change its length! It should <strong>always</strong> have exactly <code>8</code> entries.</blockquote>
 <h2 id="trilerpmeshcomponent-editor-tooling"><a class="header" href="#trilerpmeshcomponent-editor-tooling"><code>TrilerpMeshComponent</code> Editor Tooling</a></h2>
 <p>If you select a <code>TrilerpMeshCompnent</code> in the editor, you will see a visualization of the current lattice state.</p>
 <p>The green points represent the lattice points themselves, while the blue lines are just visual guides to help you see the shape of the lattice.</p>
