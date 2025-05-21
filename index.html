@@ -154,12 +154,21 @@
 
                 <div id="content" class="content">
                     <main>
+                        <h1>Introduction</h1>
+                        <p>This document contains the API documentation, usage examples, etc., for the <a href="https://www.fab.com/listings/d931a534-9816-4986-b241-5ae2e6105ba6"><strong>Trilinear Mesh Interpolation</strong> plugin available for Unreal Engine 5 on FAB</a>.</p>
+                        <p>This is a form of simplified mesh deformation, which allows you to twist, squash and stretch any mesh by manipulating a small number of control points.</p>
+                        <p>The deformation can be applied at run-time, either computed on the GPU for cosmetic effects or on the CPU for meshes whose deformation influences gameplay
+                            (e.g. when a mesh's collision needs to match its deformed state), or during level editing to allow designers to tweak and reuse existing meshes in new and interesting ways.
+                        </p>
+
                         <h1 id="usage--examples"><a class="header" href="#usage--examples">Usage &amp; Examples</a></h1>
 <h2 id="concepts"><a class="header" href="#concepts">Concepts</a></h2>
 <p>The basic idea behind Trilinear Mesh Interpolation is this: enclose your mesh in a box (typically referred to here as the <code>Lattice</code>). The default state of the
 box essentially matches the mesh's bounding box. When the corners of the box are moved, the mesh deforms to move with it, with vertices close to the moved corner
 moving about the same as the corner and vertices far from the moved corner not being affected at all. Vertices will always move to maintain their position within
 the lattice, relative to each corner.</p>
+<p>This allows, for example, a mesh to be greatly deformed while maintaining its footprint on the ground:</p>
+<p><img src="./assets/tutorial/lattice-face-rotate.gif" /></p>
 <p>Lattice values are treated as offsets. If the lattice corners all have the value <code>(0,0,0)</code>, then the mesh will be untransformed and will appear in its original state.</p>
 <h2 id="two-approaches-to-interpolation"><a class="header" href="#two-approaches-to-interpolation">Two Approaches to Interpolation</a></h2>
 <p>This plugin provides two approaches to trilinear interpolation. Visually, they will produce the same results, but which approach you should prefer to use may
