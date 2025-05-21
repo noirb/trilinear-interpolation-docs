@@ -164,14 +164,14 @@ the lattice, relative to each corner.</p>
 <h2 id="two-approaches-to-interpolation"><a class="header" href="#two-approaches-to-interpolation">Two Approaches to Interpolation</a></h2>
 <p>This plugin provides two approaches to trilinear interpolation. Visually, they will produce the same results, but which approach you should prefer to use may
 depend on your use case.</p>
-<h3 id="wpo-based-material-shader"><a class="header" href="#wpo-based-material-shader"><a href="./trilerp-materials.html">WPO-Based Material Shader</a></a></h3>
+<h3 id="wpo-based-material-shader"><a class="header" href="#wpo-based-material-shader"><a href="./how-to/trilerp-materials.html">WPO-Based Material Shader</a></a></h3>
 <p>The trilinear interpolation can be performed entirely in a shader, allowing for the effect to be performed on the GPU.</p>
 <p>This is very fast, and can be used on meshes with a high vertex count and can support a large number of meshes all deforming together in a scene at real-time.
 However, the effect is purely visual, the collision geometry of the mesh, etc., is unchanged.</p>
 <p>If you need to animate the effect, particularly if you need a LOT of objects all bouncing and twisting around in a scene together, this is the recommended approach.</p>
 <p>If you just need to apply the effect once, for example in-editor or during a procedural level generation step, or if you need collision geometry to match the
 deformed mesh, then you should use the DynamicMesh-based approach.</p>
-<h3 id="dynamicmesh"><a class="header" href="#dynamicmesh"><a href="./trilerp-mesh.html">DynamicMesh</a></a></h3>
+<h3 id="dynamicmesh"><a class="header" href="#dynamicmesh"><a href="./how-to/trilerp-mesh.html">DynamicMesh</a></a></h3>
 <p>In this approach, the trilinear interpolation is performed on the CPU to modify a given mesh. The underlying C++ code has been optimized to parallelize this work
 where possible, so you can still use this to perform real-time deformation on detailed meshes or on a number of simple meshes in a scene, but performance will be
 limited by the total number of vertices you need to process in a given frame.</p>
